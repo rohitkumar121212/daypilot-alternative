@@ -1,40 +1,14 @@
 import React, { useState, useMemo } from 'react'
-import Scheduler from './components/Scheduler'
+import SimpleVirtualScheduler from './components/SimpleVirtualScheduler'
 import dayjs from 'dayjs'
+import resourcesData from './data/resources.json'
 
 /**
  * App - Main application component with sample data
  */
 const App = () => {
-  // Hierarchical resources with parent groups and children
-  const [resources, setResources] = useState([
-    {
-      name: 'Deluxe',
-      id: 'G2',
-      expanded: true,
-      children: [
-        { id: 'A', name: 'Room-1 1-B 1-N', cleaning: 2 },
-        { id: 'B', name: 'Room-2 1-B 1-N', cleaning: 2 }
-      ]
-    },
-    {
-      name: 'Butterfly',
-      id: 'G1',
-      expanded: true,
-      children: [
-        { id: '670DH', name: '670 DH 2-B 1-N', cleaning: 2 }
-      ]
-    },
-
-    {
-      name: 'Strawberry',
-      id: 'G3',
-      expanded: true,
-      children: [
-        { id: 'C', name: 'Room-3 1-B 1-N', cleaning: 2 }
-      ]
-    }
-  ])
+  // Hierarchical resources imported from JSON file
+  const [resources, setResources] = useState(resourcesData)
   
   // Sample bookings with relative dates (visible in current timeline)
   // Bookings can reference either parent (group) or child (room) IDs
@@ -85,13 +59,14 @@ const App = () => {
       
       {/* Scheduler Component */}
       <div className="flex-1 overflow-hidden">
-        <Scheduler
+        <SimpleVirtualScheduler
           resources={resources}
           bookings={bookings}
           onBookingCreate={handleBookingCreate}
           onResourcesChange={setResources}
-          daysToShow={60}
+          daysToShow={15}
           cellWidth={100}
+          rowHeight={60}
         />
       </div>
     </div>

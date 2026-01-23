@@ -1,16 +1,10 @@
-import React from 'react'
+import React, { memo } from 'react'
 
 /**
  * DateCell - Individual date cell in the scheduler grid
- * @param {Object} props
- * @param {string} props.date - Date string in YYYY-MM-DD format
- * @param {number} props.resourceId - ID of the resource this cell belongs to
- * @param {number} props.cellWidth - Width of the cell in pixels
- * @param {boolean} props.isSelected - Whether this cell is currently selected
- * @param {Function} props.onMouseDown - Handler for mousedown event
- * @param {Function} props.onMouseEnter - Handler for mouseenter event
+ * Memoized to prevent unnecessary re-renders
  */
-const DateCell = ({
+const DateCell = memo(({
   date,
   resourceId,
   cellWidth = 100,
@@ -20,30 +14,24 @@ const DateCell = ({
 }) => {
   const handleMouseDown = (e) => {
     e.preventDefault()
-    if (onMouseDown) {
-      onMouseDown(date, resourceId, e)
-    }
+    onMouseDown?.(date, resourceId, e)
   }
   
   const handleMouseEnter = (e) => {
-    if (onMouseEnter) {
-      onMouseEnter(date, resourceId, e)
-    }
+    onMouseEnter?.(date, resourceId, e)
   }
   
   return (
     <div
-      className={`border-r border-b border-gray-200 bg-white cursor-crosshair select-none transition-colors duration-150 ${
+      className={`border-r border-b border-gray-200 bg-white cursor-crosshair select-none ${
         isSelected ? 'bg-blue-100 ring-1 ring-blue-300' : 'hover:bg-gray-50'
       }`}
-      style={{ width: `${cellWidth}px`, minWidth: `${cellWidth}px`, height: '60px' }}
+      style={{ width: cellWidth, minWidth: cellWidth, height: 60 }}
       onMouseDown={handleMouseDown}
       onMouseEnter={handleMouseEnter}
-      data-date={date}
-      data-resource-id={resourceId}
     />
   )
-}
+})
 
 export default DateCell
 

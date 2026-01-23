@@ -1,24 +1,12 @@
-import React from 'react'
+import React, { memo } from 'react'
 import DateCell from './DateCell'
 import BookingBlock from './BookingBlock'
 import SelectionOverlay from './SelectionOverlay'
 
 /**
- * ResourceRow - Displays date cells, booking blocks, and selection overlay for a single resource
- * 
- * Note: Resource name is rendered separately in Scheduler for proper scroll alignment.
- * This component only handles the timeline cells and overlays.
- * 
- * @param {Object} props
- * @param {Object} props.resource - Resource object with id and name
- * @param {Array<string>} props.dates - Array of date strings
- * @param {Array} props.bookings - Array of bookings for this resource
- * @param {Object} props.selection - Current selection state
- * @param {Function} props.onCellMouseDown - Handler for mousedown on date cell
- * @param {Function} props.onCellMouseEnter - Handler for mouseenter on date cell
- * @param {number} props.cellWidth - Width of each date cell
+ * ResourceRow - Memoized component for better performance
  */
-const ResourceRow = ({
+const ResourceRow = memo(({
   resource,
   dates,
   bookings = [],
@@ -34,8 +22,8 @@ const ResourceRow = ({
   const hasSelection = selection && selection.resourceId === resource.id
   
   return (
-    <div className="relative" style={{ height: '60px' }}>
-      {/* Date cells - base layer, flex layout maintains proper spacing */}
+    <div className="relative" style={{ height: 60 }}>
+      {/* Date cells */}
       <div className="flex relative">
         {dates.map((date) => (
           <DateCell
@@ -50,7 +38,7 @@ const ResourceRow = ({
         ))}
       </div>
       
-      {/* Booking blocks - absolute positioned above date cells */}
+      {/* Booking blocks */}
       {resourceBookings.map(booking => (
         <BookingBlock
           key={booking.id}
@@ -60,7 +48,7 @@ const ResourceRow = ({
         />
       ))}
       
-      {/* Selection overlay - absolute positioned above bookings */}
+      {/* Selection overlay */}
       {hasSelection && (
         <SelectionOverlay
           selection={selection}
@@ -70,7 +58,7 @@ const ResourceRow = ({
       )}
     </div>
   )
-}
+})
 
 /**
  * Check if a date is within the current selection range
