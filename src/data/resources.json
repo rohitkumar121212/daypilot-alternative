@@ -2,7 +2,7 @@
   {
     "name": "Butterfly Block 1",
     "id": "G1",
-    "expanded": false,
+    "expanded": true,
     "children": [
       {
         "id": "R1",

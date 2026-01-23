@@ -299,7 +299,7 @@ const SimpleVirtualScheduler = ({
         >
           <div style={{ minWidth: dates.length * cellWidth }}>
             <div 
-              className="overflow-y-auto timeline-scroll"
+              className="overflow-y-auto timeline-scroll hide-scrollbar"
               style={{ height: containerHeight }}
               onScroll={handleScroll}
             >

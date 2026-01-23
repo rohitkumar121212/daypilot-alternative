@@ -6,8 +6,7 @@ import BookingModal from './BookingModal'
 import { generateDateRange, getDateIndex } from '../utils/dateUtils'
 
 /**
- * VirtualizedScheduler - Virtualized scheduler component for handling large datasets
- * Uses react-window for virtual scrolling to improve performance
+ * VirtualizedScheduler - Using react-window for battle-tested virtualization
  */
 const VirtualizedScheduler = ({
   resources = [],
@@ -33,6 +32,8 @@ const VirtualizedScheduler = ({
   // Refs for scroll synchronization
   const headerScrollRef = useRef(null)
   const timelineScrollRef = useRef(null)
+  const resourceListRef = useRef(null)
+  const timelineListRef = useRef(null)
   const isScrollingRef = useRef(false)
   
   // Normalize hierarchical resources into flat visibleRows array
@@ -164,6 +165,9 @@ const VirtualizedScheduler = ({
     return null
   }, [selection, visibleRows, resources])
   
+  // Container height for consistent sizing
+  const containerHeight = 500
+  
   // Sync horizontal scrolling
   const handleHeaderScroll = useCallback((e) => {
     if (isScrollingRef.current) return
@@ -187,6 +191,12 @@ const VirtualizedScheduler = ({
     })
   }, [])
   
+  // Sync vertical scrolling - only resource list controls vertical scroll
+  const handleResourceScroll = useCallback(({ scrollTop }) => {
+    if (timelineListRef.current) {
+      timelineListRef.current.scrollTo(scrollTop)
+    }
+  }, [])
 
   return (
     <div className="w-full h-full flex flex-col bg-white select-none">
@@ -213,74 +223,93 @@ const VirtualizedScheduler = ({
         </div>
       </div>
       
-      {/* Virtualized Body */}
-      <div className="flex-1 relative">
-        <FixedSizeList
-          height={window.innerHeight - 120}
-          itemCount={visibleRows.length}
-          itemSize={rowHeight}
-          width="100%"
-        >
-          {({ index, style }) => {
-            const row = visibleRows[index]
-            return (
-              <div style={style} className="flex">
-                {/* Resource Column */}
-                <div className="w-48 min-w-48 border-r border-gray-200 bg-white sticky left-0 z-20">
-                  <div
-                    className={`border-b border-gray-200 bg-white flex items-center font-medium hover:bg-gray-50 h-full ${
-                      row.type === 'parent' 
-                        ? 'font-semibold bg-gray-50' 
-                        : 'pl-8 text-gray-700'
-                    }`}
-                  >
-                    {row.type === 'parent' && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleToggleExpand(row.id)
-                        }}
-                        className="mr-2 p-1 hover:bg-gray-200 rounded flex-shrink-0"
-                      >
-                        <svg
-                          className={`w-4 h-4 text-gray-600 transform ${
-                            row.expanded ? 'rotate-90' : ''
-                          }`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </button>
-                    )}
-                    {row.type === 'child' && <span className="w-6 flex-shrink-0" />}
-                    <span className="flex-1 truncate">{row.name}</span>
-                  </div>
-                </div>
-                
-                {/* Timeline Row */}
-                <div 
-                  ref={timelineScrollRef}
-                  className="flex-1 overflow-x-auto hide-scrollbar"
-                  onScroll={handleTimelineScroll}
+      {/* Virtual Body Container */}
+      <div className="flex-1 flex" style={{ height: containerHeight }}>
+        {/* Resource Column */}
+        <div className="w-48 min-w-48 border-r border-gray-200 bg-white">
+          <FixedSizeList
+            ref={resourceListRef}
+            height={containerHeight}
+            itemCount={visibleRows.length}
+            itemSize={rowHeight}
+            width={192}
+            onScroll={handleResourceScroll}
+          >
+            {({ index, style }) => {
+              const row = visibleRows[index]
+              return (
+                <div
+                  style={style}
+                  className={`border-b border-gray-200 bg-white flex items-center px-2 font-medium hover:bg-gray-50 ${
+                    row.type === 'parent' 
+                      ? 'font-semibold bg-gray-50' 
+                      : 'pl-8 text-gray-700'
+                  }`}
                 >
-                  <div style={{ minWidth: dates.length * cellWidth }}>
-                    <ResourceRow
-                      resource={row}
-                      dates={dates}
-                      bookings={bookings}
-                      selection={selection}
-                      onCellMouseDown={handleCellMouseDown}
-                      onCellMouseEnter={handleCellMouseEnter}
-                      cellWidth={cellWidth}
-                    />
-                  </div>
+                  {row.type === 'parent' && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleToggleExpand(row.id)
+                      }}
+                      className="mr-2 p-1 hover:bg-gray-200 rounded flex-shrink-0"
+                    >
+                      <svg
+                        className={`w-4 h-4 text-gray-600 transform transition-transform ${
+                          row.expanded ? 'rotate-90' : ''
+                        }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  )}
+                  {row.type === 'child' && <span className="w-6 flex-shrink-0" />}
+                  <span className="flex-1 truncate">{row.name}</span>
                 </div>
-              </div>
-            )
-          }}
-        </FixedSizeList>
+              )
+            }}
+          </FixedSizeList>
+        </div>
+        
+        {/* Timeline */}
+        <div className="flex-1 relative">
+          <div 
+            ref={timelineScrollRef}
+            className="absolute inset-0 overflow-x-auto hide-scrollbar"
+            onScroll={handleTimelineScroll}
+          >
+            <div style={{ width: dates.length * cellWidth, height: containerHeight }}>
+              <FixedSizeList
+                ref={timelineListRef}
+                height={containerHeight}
+                itemCount={visibleRows.length}
+                itemSize={rowHeight}
+                width={dates.length * cellWidth}
+                style={{ overflow: 'hidden' }}
+              >
+                {({ index, style }) => {
+                  const row = visibleRows[index]
+                  return (
+                    <div style={style}>
+                      <ResourceRow
+                        resource={row}
+                        dates={dates}
+                        bookings={bookings}
+                        selection={selection}
+                        onCellMouseDown={handleCellMouseDown}
+                        onCellMouseEnter={handleCellMouseEnter}
+                        cellWidth={cellWidth}
+                      />
+                    </div>
+                  )
+                }}
+              </FixedSizeList>
+            </div>
+          </div>
+        </div>
       </div>
       
       {/* Booking Modal */}

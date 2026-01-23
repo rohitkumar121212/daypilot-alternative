@@ -1,7 +1,9 @@
 import React, { useState, useMemo } from 'react'
 import SimpleVirtualScheduler from './components/SimpleVirtualScheduler'
+import VirtualizedScheduler from './components/VirtualizedScheduler'
 import dayjs from 'dayjs'
 import resourcesData from './data/resources.json'
+import bookingsData from './data/bookings.json'
 
 /**
  * App - Main application component with sample data
@@ -31,7 +33,7 @@ const App = () => {
   //   }
   // ], [])
   
-  const [bookings, setBookings] = useState(initialBookings)
+  const [bookings, setBookings] = useState(bookingsData)
   
   /**
    * Handle new booking creation
@@ -57,17 +59,45 @@ const App = () => {
         </p>
       </header>
       
-      {/* Scheduler Component */}
-      <div className="flex-1 overflow-hidden">
-        <SimpleVirtualScheduler
-          resources={resources}
-          bookings={bookings}
-          onBookingCreate={handleBookingCreate}
-          onResourcesChange={setResources}
-          daysToShow={15}
-          cellWidth={100}
-          rowHeight={60}
-        />
+      {/* Scheduler Components - Side by Side */}
+      <div className="flex-1 overflow-hidden flex flex-col">
+        {/* Simple Virtual Scheduler */}
+        {/* <div className="flex-1 border-b-2 border-gray-300">
+          <div className="bg-blue-50 px-4 py-2 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-blue-800">SimpleVirtualScheduler (Custom Implementation)</h2>
+            <p className="text-sm text-blue-600">Manual virtualization without external dependencies</p>
+          </div>
+          <div className="h-96">
+            <SimpleVirtualScheduler
+              resources={resources}
+              bookings={bookings}
+              onBookingCreate={handleBookingCreate}
+              onResourcesChange={setResources}
+              daysToShow={15}
+              cellWidth={100}
+              rowHeight={60}
+            />
+          </div>
+        </div> */}
+        
+        {/* React-Window Virtualized Scheduler */}
+        <div className="flex-1">
+          <div className="bg-green-50 px-4 py-2 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-green-800">VirtualizedScheduler (react-window)</h2>
+            <p className="text-sm text-green-600">Using react-window FixedSizeList for virtualization</p>
+          </div>
+          <div className="h-96">
+            <VirtualizedScheduler
+              resources={resources}
+              bookings={bookings}
+              onBookingCreate={handleBookingCreate}
+              onResourcesChange={setResources}
+              daysToShow={15}
+              cellWidth={100}
+              rowHeight={60}
+            />
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -75,97 +105,3 @@ const App = () => {
 
 export default App
 
-// const initialBookings = () => [
-//   {
-//     id: 1,
-//     resourceId: 'A', // Child room booking in Deluxe group
-//     startDate: dayjs('2026-01-21T00:00:00').format('YYYY-MM-DD'),
-//     // startDate:'2026-01-22T00:00:00',
-//     endDate: dayjs('2026-01-24T00:00:00').format('YYYY-MM-DD'),
-//     // startDate: dayjs().add(3, 'day').format('YYYY-MM-DD'),
-//     // endDate: dayjs().add(5, 'day').format('YYYY-MM-DD'),
-//     name: 'Room Booking',
-//     notes: 'Sample booking for Room-1'
-//   },
-//   {
-//     id: 2,
-//     resourceId: '670DH', // Child room booking in Butterfly group
-//     startDate: dayjs().add(7, 'day').format('YYYY-MM-DD'),
-//     endDate: dayjs().add(9, 'day').format('YYYY-MM-DD'),
-//     name: 'Butterfly Room',
-//     notes: 'Sample booking for 670 DH'
-//   }
-// ]
-const initialBookings= [
-  {
-      "Lead_Source_icon": "false",
-      "backColor": "#40c970",
-      "barHidden": "true",
-      "booking_id": 5342061332004864,
-      "bubbleHtml": "{'rooms': '3', 'price': 'N/A', 'paid': '700.0', 'days': '2', 'start': '2026-01-22 00:00', 'end': '2026-01-24 00:00', 'name': ' ', 'phone': 'NA', 'email': 'harsh.patel@thesqua.re', 'apartment': 'Room - 2', 'booking_type': 'reserve', 'booking_key': '5342061332004864', 'adult_count': '1', 'child_count': '0', 'nightly_rate': '0.0', 'enq_app_id': '', 'enq_model_id': '#', 'split_booking': 'False', 'apartment_id': '4729710451884032', 'booked_by': 'Aperfect Stay', 'reserved_till': 'NA', 'checkin_status': 'NA', 'checkout_status': 'NA', 'guarantee': 'false', 'open_case': 'false', 'open_task': 'false', 'guest_key': '4700066800467968', 'sales_channel': 'Booking Engine', 'cancellation_policy': 'NA', 'notes': '', 'Lead_Source': '#', 'reservation_id': 5406776523489280, 'channex_id': '', 'booking_notes': 'NA'}",
-      "consider_for_overbooking": "true",
-      "cssClass": "",
-      "end": "2026-01-24T00:00:00",
-      "guarantee": "false",
-      "id": "5342061332004864",
-      "is_split": "false",
-      "open_case": "false",
-      "open_task": "false",
-      "requires_attention": false,
-      "resourceId": "A",
-      "sales_channel": "Booking Engine",
-      "start": "2026-01-22T00:00:00",
-      "tags": "Booking Engine",
-      "text": " ",
-      "startDate": dayjs('2026-01-21T00:00:00').format('YYYY-MM-DD'),
-      "endDate": dayjs('2026-01-28T00:00:00').format('YYYY-MM-DD'),
-      "name": 'Room Booking',
-      "notes": 'Sample booking for Room-1'
-    },
-    {
-      "Lead_Source_icon": "false",
-      "backColor": "#40c970",
-      "barHidden": "true",
-      "booking_id": 5342061332004864,
-      "bubbleHtml": "{'rooms': '3', 'price': 'N/A', 'paid': '700.0', 'days': '2', 'start': '2026-01-22 00:00', 'end': '2026-01-24 00:00', 'name': ' ', 'phone': 'NA', 'email': 'harsh.patel@thesqua.re', 'apartment': 'Room - 2', 'booking_type': 'reserve', 'booking_key': '5342061332004864', 'adult_count': '1', 'child_count': '0', 'nightly_rate': '0.0', 'enq_app_id': '', 'enq_model_id': '#', 'split_booking': 'False', 'apartment_id': '4729710451884032', 'booked_by': 'Aperfect Stay', 'reserved_till': 'NA', 'checkin_status': 'NA', 'checkout_status': 'NA', 'guarantee': 'false', 'open_case': 'false', 'open_task': 'false', 'guest_key': '4700066800467968', 'sales_channel': 'Booking Engine', 'cancellation_policy': 'NA', 'notes': '', 'Lead_Source': '#', 'reservation_id': 5406776523489280, 'channex_id': '', 'booking_notes': 'NA'}",
-      "consider_for_overbooking": "true",
-      "cssClass": "",
-      "end": "2026-01-24T00:00:00",
-      "guarantee": "false",
-      "id": "5342061332004864",
-      "is_split": "false",
-      "open_case": "false",
-      "open_task": "false",
-      "requires_attention": false,
-      "resourceId": "670DH",
-      "sales_channel": "Booking Engine",
-      "start": "2026-01-22T00:00:00",
-      "startDate": dayjs('2026-01-22T00:00:00').format('YYYY-MM-DD'),
-      "endDate": dayjs('2026-01-24T00:00:00').format('YYYY-MM-DD'),
-      "name": 'Butterfly Room',
-      "notes": 'Sample booking for 670 DH',
-      "tags": "Booking Engine",
-      "text": " "
-    },
-    {
-      "Lead_Source_icon": "false",
-      "backColor": "#40c970",
-      "barHidden": "true",
-      "booking_id": 5342061332004864,
-      "bubbleHtml": "{'rooms': '3', 'price': 'N/A', 'paid': '700.0', 'days': '2', 'start': '2026-01-22 00:00', 'end': '2026-01-24 00:00', 'name': ' ', 'phone': 'NA', 'email': 'harsh.patel@thesqua.re', 'apartment': 'Room - 2', 'booking_type': 'reserve', 'booking_key': '5342061332004864', 'adult_count': '1', 'child_count': '0', 'nightly_rate': '0.0', 'enq_app_id': '', 'enq_model_id': '#', 'split_booking': 'False', 'apartment_id': '4729710451884032', 'booked_by': 'Aperfect Stay', 'reserved_till': 'NA', 'checkin_status': 'NA', 'checkout_status': 'NA', 'guarantee': 'false', 'open_case': 'false', 'open_task': 'false', 'guest_key': '4700066800467968', 'sales_channel': 'Booking Engine', 'cancellation_policy': 'NA', 'notes': '', 'Lead_Source': '#', 'reservation_id': 5406776523489280, 'channex_id': '', 'booking_notes': 'NA'}",
-      "consider_for_overbooking": "true",
-      "cssClass": "",
-      "end": "2026-01-24T00:00:00",
-      "guarantee": "false",
-      "id": "5342061332004864",
-      "is_split": "false",
-      "open_case": "false",
-      "open_task": "false",
-      "requires_attention": false,
-      "resourceId": "Room - 2",
-      "sales_channel": "Booking Engine",
-      "start": "2026-01-22T00:00:00",
-      "tags": "Booking Engine",
-      "text": " "
-    }
-]
