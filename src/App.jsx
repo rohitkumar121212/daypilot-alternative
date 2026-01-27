@@ -86,7 +86,7 @@ const App = () => {
             <h2 className="text-lg font-semibold text-green-800">VirtualizedScheduler (react-window)</h2>
             <p className="text-sm text-green-600">Using react-window FixedSizeList for virtualization</p>
           </div>
-          <div className="h-96">
+          <div className="h-[60vh]">
             <VirtualizedScheduler
               resources={resources}
               bookings={bookings}

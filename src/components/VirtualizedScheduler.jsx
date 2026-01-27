@@ -3,6 +3,7 @@ import { FixedSizeList } from 'react-window'
 import DateHeader from './DateHeader'
 import ResourceRow from './ResourceRow'
 import BookingModal from './BookingModal'
+import FilterBar from './FilterBar'
 import { generateDateRange, getDateIndex } from '../utils/dateUtils'
 
 const VirtualizedScheduler = ({
@@ -15,6 +16,10 @@ const VirtualizedScheduler = ({
   rowHeight = 60
 }) => {
   const dates = useMemo(() => generateDateRange(daysToShow), [daysToShow])
+  
+  // Filter state
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedBookingId, setSelectedBookingId] = useState('')
 
   /* =========================
      Selection state
@@ -32,13 +37,44 @@ const VirtualizedScheduler = ({
   ========================= */
   const headerScrollRef = useRef(null)
   const timelineScrollRef = useRef(null)
+  const resourceScrollRef = useRef(null)
+  const timelineListRef = useRef(null)
   const isSyncingRef = useRef(false)
 
   /* =========================
-     Flatten resources
+     Flatten resources with booking ID filter
   ========================= */
   const visibleRows = useMemo(() => {
-    return resources.flatMap(parent => {
+    let filteredResources = resources
+    
+    // Filter by booking ID if selected
+    if (selectedBookingId) {
+      const matchingBookings = bookings.filter(booking => 
+        booking.booking_id.toString().includes(selectedBookingId)
+      )
+      const matchingResourceIds = new Set(matchingBookings.map(b => b.resourceId))
+      
+      filteredResources = resources.map(parent => ({
+        ...parent,
+        expanded: true, // Auto-expand when filtering by booking ID
+        children: (parent.children || []).filter(child => 
+          matchingResourceIds.has(child.id)
+        )
+      })).filter(parent => parent.children.length > 0)
+    }
+    
+    // Apply search filter
+    if (searchTerm) {
+      filteredResources = filteredResources.filter(parent => {
+        const parentMatches = parent.name.toLowerCase().includes(searchTerm.toLowerCase())
+        const childMatches = (parent.children || []).some(child => 
+          child.name.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+        return parentMatches || childMatches
+      })
+    }
+
+    return filteredResources.flatMap(parent => {
       const parentRow = {
         ...parent,
         type: 'parent'
@@ -46,15 +82,17 @@ const VirtualizedScheduler = ({
 
       if (!parent.expanded) return [parentRow]
 
-      const children = (parent.children || []).map(child => ({
-        ...child,
-        parentId: parent.id,
-        type: 'child'
-      }))
+      const children = (parent.children || [])
+        .filter(child => !searchTerm || child.name.toLowerCase().includes(searchTerm.toLowerCase()))
+        .map(child => ({
+          ...child,
+          parentId: parent.id,
+          type: 'child'
+        }))
 
       return [parentRow, ...children]
     })
-  }, [resources])
+  }, [resources, searchTerm, selectedBookingId, bookings])
 
   /* =========================
      Cell interactions
@@ -152,13 +190,58 @@ const VirtualizedScheduler = ({
     })
   }
 
+  /* =========================
+     Vertical scroll sync
+  ========================= */
+  const syncVerticalScroll = useCallback((scrollData) => {
+    if (isSyncingRef.current) return
+    isSyncingRef.current = true
+    
+    // Handle FixedSizeList scroll event (has scrollTop property)
+    if (typeof scrollData === 'object' && 'scrollTop' in scrollData) {
+      if (resourceScrollRef.current) {
+        resourceScrollRef.current.scrollTop = scrollData.scrollTop
+      }
+    }
+    
+    requestAnimationFrame(() => {
+      isSyncingRef.current = false
+    })
+  }, [])
+
+  const syncResourceScroll = useCallback((e) => {
+    if (isSyncingRef.current) return
+    isSyncingRef.current = true
+    
+    if (timelineListRef.current) {
+      timelineListRef.current.scrollTo(e.target.scrollTop)
+    }
+    
+    requestAnimationFrame(() => {
+      isSyncingRef.current = false
+    })
+  }, [])
+
   const containerHeight = 500
 
   return (
     <div className="w-full h-full flex flex-col bg-white select-none">
+      {/* ================= FILTER BAR ================= */}
+      <FilterBar
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        bookings={bookings}
+        selectedBookingId={selectedBookingId}
+        onBookingIdChange={setSelectedBookingId}
+        onClearFilters={() => {
+          setSearchTerm('')
+          setSelectedBookingId('')
+        }}
+      />
+
       {/* ================= HEADER ================= */}
       <div className="flex border-b bg-gray-50 sticky top-0 z-30">
-        <div className="w-48 min-w-48 border-r flex items-center justify-center font-semibold">
+        <div className="w-48 min-w-48 border-r flex items-center justify-center font-semibold sticky left-0 z-50 bg-gray-50">
           Resources
         </div>
 
@@ -176,45 +259,57 @@ const VirtualizedScheduler = ({
       </div>
 
       {/* ================= BODY ================= */}
-      <div className="flex-1 relative" style={{ height: containerHeight }}>
-        <div
-          ref={timelineScrollRef}
-          className="absolute inset-0 overflow-x-auto hide-scrollbar"
-          onScroll={e => syncScroll(e.target, headerScrollRef.current)}
-        >
-          <div style={{ width: dates.length * cellWidth }}>
-            <FixedSizeList
-              height={containerHeight}
-              itemCount={visibleRows.length}
-              itemSize={rowHeight}
-              width="100%"
-            >
-              {({ index, style }) => {
-                const row = visibleRows[index]
+      <div className="flex-1 flex" style={{ height: containerHeight }}>
+        {/* Fixed Resource Column */}
+        <div className="w-48 min-w-48 border-r border-gray-200 bg-white z-40">
+          <div 
+            ref={resourceScrollRef}
+            className="h-full overflow-y-auto"
+            onScroll={syncResourceScroll}
+          >
+            {visibleRows.map((row, index) => (
+              <div
+                key={row.id}
+                className={`h-[60px] border-b border-gray-200 bg-white flex items-center px-2 ${
+                  row.type === 'parent'
+                    ? 'font-semibold bg-gray-50'
+                    : 'pl-8 text-gray-700'
+                }`}
+              >
+                {row.type === 'parent' && (
+                  <button
+                    onClick={() => handleToggleExpand(row.id)}
+                    className="mr-2 p-1 hover:bg-gray-200 rounded"
+                  >
+                    ▶
+                  </button>
+                )}
+                <span className="truncate">{row.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
 
-                return (
-                  <div style={style} className="flex border-b">
-                    {/* Resource column */}
-                    <div
-                      className={`w-48 min-w-48 flex items-center px-2 ${
-                        row.type === 'parent'
-                          ? 'font-semibold bg-gray-50'
-                          : 'pl-8 text-gray-700'
-                      }`}
-                    >
-                      {row.type === 'parent' && (
-                        <button
-                          onClick={() => handleToggleExpand(row.id)}
-                          className="mr-2 p-1 hover:bg-gray-200 rounded"
-                        >
-                          ▶
-                        </button>
-                      )}
-                      <span className="truncate">{row.name}</span>
-                    </div>
-
-                    {/* Timeline */}
-                    <div className="flex-1">
+        {/* Scrollable Timeline */}
+        <div className="flex-1 relative">
+          <div
+            ref={timelineScrollRef}
+            className="absolute inset-0 overflow-x-auto hide-scrollbar"
+            onScroll={e => syncScroll(e.target, headerScrollRef.current)}
+          >
+            <div style={{ width: dates.length * cellWidth }}>
+              <FixedSizeList
+                ref={timelineListRef}
+                height={containerHeight}
+                itemCount={visibleRows.length}
+                itemSize={rowHeight}
+                width={dates.length * cellWidth}
+                style={{ overflowY: 'hidden' }}
+              >
+                {({ index, style }) => {
+                  const row = visibleRows[index]
+                  return (
+                    <div style={style}>
                       <ResourceRow
                         resource={row}
                         dates={dates}
@@ -225,10 +320,10 @@ const VirtualizedScheduler = ({
                         cellWidth={cellWidth}
                       />
                     </div>
-                  </div>
-                )
-              }}
-            </FixedSizeList>
+                  )
+                }}
+              </FixedSizeList>
+            </div>
           </div>
         </div>
       </div>
