@@ -29,9 +29,20 @@ const VirtualizedScheduler = ({
   const [isSelecting, setIsSelecting] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
 
+  /* =========================
+     Drag and drop state
+  ========================= */
+  const [dragState, setDragState] = useState({
+    isDragging: false,
+    draggedBooking: null,
+    dragOffset: { x: 0, y: 0 },
+    dropTarget: null
+  })
+
   const mouseDownRef = useRef(false)
   const startDateRef = useRef(null)
   const startResourceIdRef = useRef(null)
+  const dragStartPosRef = useRef({ x: 0, y: 0 })
 
   /* =========================
      Horizontal scroll sync
@@ -113,28 +124,103 @@ const VirtualizedScheduler = ({
   }, [])
 
   const handleCellMouseEnter = useCallback((date, resourceId) => {
+    if (dragState.isDragging) {
+      // Handle drop target highlighting during drag
+      setDragState(prev => ({
+        ...prev,
+        dropTarget: { date, resourceId }
+      }))
+      return
+    }
+    
     if (!mouseDownRef.current || !isSelecting) return
     if (resourceId !== startResourceIdRef.current) return
 
     setSelection(prev =>
       prev ? { ...prev, endDate: date } : null
     )
-  }, [isSelecting])
+  }, [isSelecting, dragState.isDragging])
+
+  /* =========================
+     Drag and drop handlers
+  ========================= */
+  const handleBookingDragStart = useCallback((booking, e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    dragStartPosRef.current = { x: e.clientX, y: e.clientY }
+    setDragState({
+      isDragging: true,
+      draggedBooking: booking,
+      dragOffset: { x: 0, y: 0 },
+      dropTarget: null
+    })
+  }, [])
+
+  const handleBookingDragMove = useCallback((e) => {
+    if (!dragState.isDragging) return
+    
+    const deltaX = e.clientX - dragStartPosRef.current.x
+    const deltaY = e.clientY - dragStartPosRef.current.y
+    
+    setDragState(prev => ({
+      ...prev,
+      dragOffset: { x: deltaX, y: deltaY }
+    }))
+  }, [dragState.isDragging])
+
+  const handleBookingDragEnd = useCallback((targetDate, targetResourceId) => {
+    if (!dragState.isDragging || !dragState.draggedBooking) return
+    
+    const draggedBooking = dragState.draggedBooking
+    
+    if (targetDate && targetResourceId) {
+      // Calculate booking duration
+      const startDate = new Date(draggedBooking.startDate)
+      const endDate = new Date(draggedBooking.endDate)
+      const duration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24))
+      
+      // Calculate new end date
+      const newStartDate = targetDate
+      const newEndDate = new Date(new Date(targetDate).getTime() + duration * 24 * 60 * 60 * 1000)
+        .toISOString().split('T')[0]
+      
+      // For now, just log the change - we'll need to update App.jsx to handle booking updates
+      console.log('Booking moved:', { 
+        from: draggedBooking, 
+        to: { resourceId: targetResourceId, startDate: newStartDate, endDate: newEndDate } 
+      })
+    }
+    
+    // Reset drag state
+    setDragState({
+      isDragging: false,
+      draggedBooking: null,
+      dragOffset: { x: 0, y: 0 },
+      dropTarget: null
+    })
+  }, [dragState, bookings])
 
   /* =========================
      Booking click handling
   ========================= */
   const handleBookingClick = useCallback((booking) => {
+    if (dragState.isDragging) return // Ignore clicks during drag
     setSelectedBooking(booking)
     setSelection(null) // Clear any date selection
     setModalOpen(true)
-  }, [])
+  }, [dragState.isDragging])
 
   /* =========================
      Mouse up handling
   ========================= */
   useEffect(() => {
-    const onMouseUp = () => {
+    const onMouseUp = (e) => {
+      if (dragState.isDragging && dragState.dropTarget) {
+        handleBookingDragEnd(dragState.dropTarget.date, dragState.dropTarget.resourceId)
+        return
+      }
+      
       if (!mouseDownRef.current || !selection) return
 
       mouseDownRef.current = false
@@ -152,9 +238,17 @@ const VirtualizedScheduler = ({
       setTimeout(() => setModalOpen(true), 80)
     }
 
+    const onMouseMove = (e) => {
+      handleBookingDragMove(e)
+    }
+
     window.addEventListener('mouseup', onMouseUp)
-    return () => window.removeEventListener('mouseup', onMouseUp)
-  }, [selection, dates])
+    window.addEventListener('mousemove', onMouseMove)
+    return () => {
+      window.removeEventListener('mouseup', onMouseUp)
+      window.removeEventListener('mousemove', onMouseMove)
+    }
+  }, [selection, dates, dragState, handleBookingDragEnd, handleBookingDragMove])
 
   /* =========================
      Booking modal
@@ -326,9 +420,11 @@ const VirtualizedScheduler = ({
                         dates={dates}
                         bookings={bookings}
                         selection={selection}
+                        dragState={dragState}
                         onCellMouseDown={handleCellMouseDown}
                         onCellMouseEnter={handleCellMouseEnter}
                         onBookingClick={handleBookingClick}
+                        onBookingDragStart={handleBookingDragStart}
                         cellWidth={cellWidth}
                       />
                     </div>

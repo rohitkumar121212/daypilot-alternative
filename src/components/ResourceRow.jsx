@@ -11,9 +11,11 @@ const ResourceRow = memo(({
   dates,
   bookings = [],
   selection,
+  dragState,
   onCellMouseDown,
   onCellMouseEnter,
   onBookingClick,
+  onBookingDragStart,
   cellWidth = 100
 }) => {
   // Filter bookings for this resource
@@ -26,29 +28,42 @@ const ResourceRow = memo(({
     <div className="relative" style={{ height: 60 }}>
       {/* Date cells */}
       <div className="flex relative">
-        {dates.map((date) => (
-          <DateCell
-            key={`${resource.id}-${date}`}
-            date={date}
-            resourceId={resource.id}
-            cellWidth={cellWidth}
-            isSelected={hasSelection && isDateInSelection(date, selection)}
-            onMouseDown={onCellMouseDown}
-            onMouseEnter={onCellMouseEnter}
-          />
-        ))}
+        {dates.map((date) => {
+          const isDropTarget = dragState?.dropTarget?.date === date && 
+                              dragState?.dropTarget?.resourceId === resource.id
+          
+          return (
+            <DateCell
+              key={`${resource.id}-${date}`}
+              date={date}
+              resourceId={resource.id}
+              cellWidth={cellWidth}
+              isSelected={hasSelection && isDateInSelection(date, selection)}
+              isDropTarget={isDropTarget}
+              onMouseDown={onCellMouseDown}
+              onMouseEnter={onCellMouseEnter}
+            />
+          )
+        })}
       </div>
       
       {/* Booking blocks */}
-      {resourceBookings.map(booking => (
-        <BookingBlock
-          key={booking.id}
-          booking={booking}
-          dates={dates}
-          cellWidth={cellWidth}
-          onBookingClick={onBookingClick}
-        />
-      ))}
+      {resourceBookings.map(booking => {
+        const isDragging = dragState?.draggedBooking?.id === booking.id
+        
+        return (
+          <BookingBlock
+            key={booking.id}
+            booking={booking}
+            dates={dates}
+            cellWidth={cellWidth}
+            isDragging={isDragging}
+            dragOffset={isDragging ? dragState.dragOffset : { x: 0, y: 0 }}
+            onBookingClick={onBookingClick}
+            onBookingDragStart={onBookingDragStart}
+          />
+        )
+      })}
       
       {/* Selection overlay */}
       {hasSelection && (

@@ -9,6 +9,7 @@ const DateCell = memo(({
   resourceId,
   cellWidth = 100,
   isSelected = false,
+  isDropTarget = false,
   onMouseDown,
   onMouseEnter
 }) => {
@@ -24,7 +25,9 @@ const DateCell = memo(({
   return (
     <div
       className={`border-r border-b border-gray-200 bg-white cursor-crosshair select-none ${
-        isSelected ? 'bg-blue-100 ring-1 ring-blue-300' : 'hover:bg-gray-50'
+        isSelected ? 'bg-blue-100 ring-1 ring-blue-300' : 
+        isDropTarget ? 'bg-green-100 ring-2 ring-green-400' :
+        'hover:bg-gray-50'
       }`}
       style={{ width: cellWidth, minWidth: cellWidth, height: 60 }}
       onMouseDown={handleMouseDown}

@@ -8,8 +8,19 @@ import { getDateIndex, daysBetween } from '../utils/dateUtils'
  * @param {Array<string>} props.dates - Array of all dates in the timeline
  * @param {number} props.cellWidth - Width of each date cell
  * @param {Function} props.onBookingClick - Handler for booking click events
+ * @param {Function} props.onBookingDragStart - Handler for booking drag start
+ * @param {boolean} props.isDragging - Whether this booking is being dragged
+ * @param {Object} props.dragOffset - Drag offset {x, y}
  */
-const BookingBlock = ({ booking, dates, cellWidth = 100, onBookingClick }) => {
+const BookingBlock = ({ 
+  booking, 
+  dates, 
+  cellWidth = 100, 
+  onBookingClick, 
+  onBookingDragStart,
+  isDragging = false,
+  dragOffset = { x: 0, y: 0 }
+}) => {
   const startIndex = getDateIndex(booking.startDate, dates)
   const endIndex = getDateIndex(booking.endDate, dates)
   
@@ -24,22 +35,60 @@ const BookingBlock = ({ booking, dates, cellWidth = 100, onBookingClick }) => {
   const span = visibleEndIndex - visibleStartIndex + 1
   const width = span * cellWidth
   
-  const handleClick = (e) => {
+  const handleMouseDown = (e) => {
     e.preventDefault()
     e.stopPropagation()
-    onBookingClick?.(booking)
+    
+    // Start drag after a small delay to distinguish from click
+    const startTime = Date.now()
+    const startPos = { x: e.clientX, y: e.clientY }
+    
+    const handleMouseMove = (moveEvent) => {
+      const timeDiff = Date.now() - startTime
+      const distance = Math.sqrt(
+        Math.pow(moveEvent.clientX - startPos.x, 2) + 
+        Math.pow(moveEvent.clientY - startPos.y, 2)
+      )
+      
+      // Start drag if moved more than 5px or held for more than 200ms
+      if (distance > 5 || timeDiff > 200) {
+        document.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener('mouseup', handleMouseUp)
+        onBookingDragStart?.(booking, e)
+      }
+    }
+    
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+      
+      // If no drag started, treat as click
+      const timeDiff = Date.now() - startTime
+      if (timeDiff < 200) {
+        onBookingClick?.(booking)
+      }
+    }
+    
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
   }
   
   return (
     <div
-      className="absolute top-1 bottom-1 bg-green-500 border border-green-600 rounded text-white text-xs flex items-center justify-center font-medium shadow-md z-20 cursor-pointer transition-shadow hover:shadow-lg hover:bg-green-600"
+      className={`absolute top-1 bottom-1 border rounded text-white text-xs flex items-center justify-center font-medium shadow-md z-20 cursor-pointer transition-all ${
+        isDragging 
+          ? 'bg-green-400 border-green-500 opacity-75 shadow-lg transform scale-105' 
+          : 'bg-green-500 border-green-600 hover:bg-green-600 hover:shadow-lg'
+      }`}
       style={{
-        left: `${left}px`,
+        left: `${left + dragOffset.x}px`,
+        top: `${1 + dragOffset.y}px`,
         width: `${width}px`,
-        height: '50px'
+        height: '50px',
+        transform: isDragging ? 'rotate(2deg)' : 'none'
       }}
       title={`${booking.name || `Booking ${booking.id}`}: ${booking.startDate} to ${booking.endDate}`}
-      onClick={handleClick}
+      onMouseDown={handleMouseDown}
     >
       <span className="truncate px-2">{booking.name || `Booking ${booking.id}`}</span>
     </div>
