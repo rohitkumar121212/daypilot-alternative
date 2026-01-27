@@ -7,8 +7,9 @@ import { getDateIndex, daysBetween } from '../utils/dateUtils'
  * @param {Object} props.booking - Booking object with id, resourceId, startDate, endDate
  * @param {Array<string>} props.dates - Array of all dates in the timeline
  * @param {number} props.cellWidth - Width of each date cell
+ * @param {Function} props.onBookingClick - Handler for booking click events
  */
-const BookingBlock = ({ booking, dates, cellWidth = 100 }) => {
+const BookingBlock = ({ booking, dates, cellWidth = 100, onBookingClick }) => {
   const startIndex = getDateIndex(booking.startDate, dates)
   const endIndex = getDateIndex(booking.endDate, dates)
   
@@ -23,15 +24,22 @@ const BookingBlock = ({ booking, dates, cellWidth = 100 }) => {
   const span = visibleEndIndex - visibleStartIndex + 1
   const width = span * cellWidth
   
+  const handleClick = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onBookingClick?.(booking)
+  }
+  
   return (
     <div
-      className="absolute top-1 bottom-1 bg-green-500 border border-green-600 rounded text-white text-xs flex items-center justify-center font-medium shadow-md z-20 pointer-events-none transition-shadow hover:shadow-lg"
+      className="absolute top-1 bottom-1 bg-green-500 border border-green-600 rounded text-white text-xs flex items-center justify-center font-medium shadow-md z-20 cursor-pointer transition-shadow hover:shadow-lg hover:bg-green-600"
       style={{
         left: `${left}px`,
         width: `${width}px`,
         height: '50px'
       }}
       title={`${booking.name || `Booking ${booking.id}`}: ${booking.startDate} to ${booking.endDate}`}
+      onClick={handleClick}
     >
       <span className="truncate px-2">{booking.name || `Booking ${booking.id}`}</span>
     </div>

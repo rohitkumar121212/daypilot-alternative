@@ -13,6 +13,7 @@ const ResourceRow = memo(({
   selection,
   onCellMouseDown,
   onCellMouseEnter,
+  onBookingClick,
   cellWidth = 100
 }) => {
   // Filter bookings for this resource
@@ -45,6 +46,7 @@ const ResourceRow = memo(({
           booking={booking}
           dates={dates}
           cellWidth={cellWidth}
+          onBookingClick={onBookingClick}
         />
       ))}
       

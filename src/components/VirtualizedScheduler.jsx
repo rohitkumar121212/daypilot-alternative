@@ -25,6 +25,7 @@ const VirtualizedScheduler = ({
      Selection state
   ========================= */
   const [selection, setSelection] = useState(null)
+  const [selectedBooking, setSelectedBooking] = useState(null)
   const [isSelecting, setIsSelecting] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
 
@@ -121,6 +122,15 @@ const VirtualizedScheduler = ({
   }, [isSelecting])
 
   /* =========================
+     Booking click handling
+  ========================= */
+  const handleBookingClick = useCallback((booking) => {
+    setSelectedBooking(booking)
+    setSelection(null) // Clear any date selection
+    setModalOpen(true)
+  }, [])
+
+  /* =========================
      Mouse up handling
   ========================= */
   useEffect(() => {
@@ -152,6 +162,7 @@ const VirtualizedScheduler = ({
   const handleModalClose = useCallback(() => {
     setModalOpen(false)
     setSelection(null)
+    setSelectedBooking(null)
     mouseDownRef.current = false
     setIsSelecting(false)
   }, [])
@@ -317,6 +328,7 @@ const VirtualizedScheduler = ({
                         selection={selection}
                         onCellMouseDown={handleCellMouseDown}
                         onCellMouseEnter={handleCellMouseEnter}
+                        onBookingClick={handleBookingClick}
                         cellWidth={cellWidth}
                       />
                     </div>
@@ -332,7 +344,8 @@ const VirtualizedScheduler = ({
       <BookingModal
         isOpen={modalOpen}
         selection={selection}
-        resource={visibleRows.find(r => r.id === selection?.resourceId)}
+        booking={selectedBooking}
+        resource={visibleRows.find(r => r.id === (selectedBooking?.resourceId || selection?.resourceId))}
         onClose={handleModalClose}
         onConfirm={handleBookingConfirm}
       />

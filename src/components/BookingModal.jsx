@@ -6,32 +6,41 @@ import { daysBetween } from '../utils/dateUtils'
  * @param {Object} props
  * @param {boolean} props.isOpen - Whether the modal is open
  * @param {Object} props.selection - Selection object with resourceId, startDate, endDate
+ * @param {Object} props.booking - Existing booking object (for editing)
  * @param {Object} props.resource - Resource object for the selected resource
  * @param {Function} props.onClose - Handler to close the modal
- * @param {Function} props.onConfirm - Handler to confirm booking creation
+ * @param {Function} props.onConfirm - Handler to confirm booking creation/update
  */
-const BookingModal = ({ isOpen, selection, resource, onClose, onConfirm }) => {
+const BookingModal = ({ isOpen, selection, booking, resource, onClose, onConfirm }) => {
   const [bookingName, setBookingName] = useState('')
   const [notes, setNotes] = useState('')
   
+  const isEditing = !!booking
+  const modalData = booking || selection
+  
   useEffect(() => {
-    // Reset form when modal opens/closes
-    if (!isOpen) {
+    if (isOpen && booking) {
+      // Editing existing booking
+      setBookingName(booking.name || '')
+      setNotes(booking.notes || '')
+    } else if (isOpen) {
+      // Creating new booking
       setBookingName('')
       setNotes('')
     }
-  }, [isOpen])
+  }, [isOpen, booking])
   
-  if (!isOpen || !selection || !resource) return null
+  if (!isOpen || !modalData || !resource) return null
   
-  const dayCount = daysBetween(selection.startDate, selection.endDate)
+  const dayCount = daysBetween(modalData.startDate, modalData.endDate)
   
   const handleConfirm = () => {
     if (bookingName.trim()) {
       onConfirm({
-        resourceId: selection.resourceId,
-        startDate: selection.startDate,
-        endDate: selection.endDate,
+        ...(booking || {}), // Include existing booking data if editing
+        resourceId: modalData.resourceId,
+        startDate: modalData.startDate,
+        endDate: modalData.endDate,
         name: bookingName,
         notes: notes
       })
@@ -56,7 +65,9 @@ const BookingModal = ({ isOpen, selection, resource, onClose, onConfirm }) => {
       >
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Create Booking</h2>
+          <h2 className="text-xl font-semibold text-gray-900">
+            {isEditing ? 'Edit Booking' : 'Create Booking'}
+          </h2>
         </div>
         
         {/* Content */}
@@ -75,7 +86,7 @@ const BookingModal = ({ isOpen, selection, resource, onClose, onConfirm }) => {
               Date Range
             </label>
             <div className="text-gray-900">
-              {selection.startDate} to {selection.endDate}
+              {modalData.startDate} to {modalData.endDate}
               <span className="text-gray-500 ml-2">({dayCount} {dayCount === 1 ? 'day' : 'days'})</span>
             </div>
           </div>
@@ -123,7 +134,7 @@ const BookingModal = ({ isOpen, selection, resource, onClose, onConfirm }) => {
             disabled={!bookingName.trim()}
             className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
           >
-            Create Booking
+            {isEditing ? 'Update Booking' : 'Create Booking'}
           </button>
         </div>
       </div>
