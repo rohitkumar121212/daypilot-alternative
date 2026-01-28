@@ -163,9 +163,24 @@ const VirtualizedScheduler = ({
     const deltaX = e.clientX - dragStartPosRef.current.x
     const deltaY = e.clientY - dragStartPosRef.current.y
     
+    // Find drop target using elementFromPoint
+    const elementUnderMouse = document.elementFromPoint(e.clientX, e.clientY)
+    let dropTarget = null
+    
+    if (elementUnderMouse) {
+      const dateCell = elementUnderMouse.closest('[data-date][data-resource-id]')
+      if (dateCell) {
+        dropTarget = {
+          date: dateCell.getAttribute('data-date'),
+          resourceId: dateCell.getAttribute('data-resource-id')
+        }
+      }
+    }
+    
     setDragState(prev => ({
       ...prev,
-      dragOffset: { x: deltaX, y: deltaY }
+      dragOffset: { x: deltaX, y: deltaY },
+      dropTarget
     }))
   }, [dragState.isDragging])
 
@@ -216,8 +231,36 @@ const VirtualizedScheduler = ({
   ========================= */
   useEffect(() => {
     const onMouseUp = (e) => {
-      if (dragState.isDragging && dragState.dropTarget) {
-        handleBookingDragEnd(dragState.dropTarget.date, dragState.dropTarget.resourceId)
+      if (dragState.isDragging) {
+        // Always try to find drop target on mouse up, even if dropTarget wasn't set during move
+        let finalDropTarget = dragState.dropTarget
+        
+        if (!finalDropTarget) {
+          // Find the element under the mouse cursor
+          const elementUnderMouse = document.elementFromPoint(e.clientX, e.clientY)
+          if (elementUnderMouse) {
+            // Look for date cell attributes
+            const dateCell = elementUnderMouse.closest('[data-date][data-resource-id]')
+            if (dateCell) {
+              finalDropTarget = {
+                date: dateCell.getAttribute('data-date'),
+                resourceId: dateCell.getAttribute('data-resource-id')
+              }
+            }
+          }
+        }
+        
+        if (finalDropTarget) {
+          handleBookingDragEnd(finalDropTarget.date, finalDropTarget.resourceId)
+        } else {
+          // No valid drop target, reset drag state
+          setDragState({
+            isDragging: false,
+            draggedBooking: null,
+            dragOffset: { x: 0, y: 0 },
+            dropTarget: null
+          })
+        }
         return
       }
       

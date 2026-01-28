@@ -30,6 +30,8 @@ const DateCell = memo(({
         'hover:bg-gray-50'
       }`}
       style={{ width: cellWidth, minWidth: cellWidth, height: 60 }}
+      data-date={date}
+      data-resource-id={resourceId}
       onMouseDown={handleMouseDown}
       onMouseEnter={handleMouseEnter}
     />

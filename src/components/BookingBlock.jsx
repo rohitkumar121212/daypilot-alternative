@@ -85,7 +85,8 @@ const BookingBlock = ({
         top: `${1 + dragOffset.y}px`,
         width: `${width}px`,
         height: '50px',
-        transform: isDragging ? 'rotate(2deg)' : 'none'
+        transform: isDragging ? 'rotate(2deg)' : 'none',
+        pointerEvents: isDragging ? 'none' : 'auto'
       }}
       title={`${booking.name || `Booking ${booking.id}`}: ${booking.startDate} to ${booking.endDate}`}
       onMouseDown={handleMouseDown}
