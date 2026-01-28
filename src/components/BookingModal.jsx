@@ -21,7 +21,7 @@ const BookingModal = ({ isOpen, selection, booking, resource, onClose, onConfirm
   useEffect(() => {
     if (isOpen && booking) {
       // Editing existing booking
-      setBookingName(booking.name || '')
+      setBookingName(booking.text || booking.name || '')
       setNotes(booking.notes || '')
     } else if (isOpen) {
       // Creating new booking
@@ -41,7 +41,7 @@ const BookingModal = ({ isOpen, selection, booking, resource, onClose, onConfirm
         resourceId: modalData.resourceId,
         startDate: modalData.startDate,
         endDate: modalData.endDate,
-        name: bookingName,
+        text: bookingName,  // Use 'text' field instead of 'name'
         notes: notes
       })
       onClose()

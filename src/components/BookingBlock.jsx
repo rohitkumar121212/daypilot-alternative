@@ -73,25 +73,31 @@ const BookingBlock = ({
     document.addEventListener('mouseup', handleMouseUp)
   }
   
+  // Get background color from booking data or use default
+  const backgroundColor = booking.backColor || '#40c970'
+  const borderColor = booking.backColor || '#40c970'
+  
   return (
     <div
       className={`absolute top-1 bottom-1 border rounded text-white text-xs flex items-center justify-center font-medium shadow-md z-20 cursor-pointer transition-all ${
         isDragging 
-          ? 'bg-green-400 border-green-500 opacity-75 shadow-lg transform scale-105' 
-          : 'bg-green-500 border-green-600 hover:bg-green-600 hover:shadow-lg'
+          ? 'opacity-75 shadow-lg transform scale-105' 
+          : 'hover:shadow-lg'
       }`}
       style={{
         left: `${left + dragOffset.x}px`,
         top: `${1 + dragOffset.y}px`,
         width: `${width}px`,
         height: '50px',
+        backgroundColor: isDragging ? `${backgroundColor}99` : backgroundColor, // Add transparency when dragging
+        borderColor: borderColor,
         transform: isDragging ? 'rotate(2deg)' : 'none',
         pointerEvents: isDragging ? 'none' : 'auto'
       }}
-      title={`${booking.name || `Booking ${booking.id}`}: ${booking.startDate} to ${booking.endDate}`}
+      title={`${booking.text || `Booking ${booking.id}`}: ${booking.startDate} to ${booking.endDate}`}
       onMouseDown={handleMouseDown}
     >
-      <span className="truncate px-2">{booking.name || `Booking ${booking.id}`}</span>
+      <span className="truncate px-2">{booking?.text || `Booking ${booking.id}`}</span>
     </div>
   )
 }
