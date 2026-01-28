@@ -357,12 +357,12 @@ const VirtualizedScheduler = ({
     })
   }, [])
 
-  const syncResourceScroll = useCallback((e) => {
+  const syncResourceScroll = useCallback((scrollData) => {
     if (isSyncingRef.current) return
     isSyncingRef.current = true
     
     if (timelineListRef.current) {
-      timelineListRef.current.scrollTo(e.target.scrollTop)
+      timelineListRef.current.scrollTo(scrollData.scrollTop)
     }
     
     requestAnimationFrame(() => {
@@ -408,68 +408,61 @@ const VirtualizedScheduler = ({
 
       {/* ================= BODY ================= */}
       <div className="flex-1 flex" style={{ height: containerHeight }}>
-        {/* Fixed Resource Column */}
-        <div className="w-48 min-w-48 border-r border-gray-200 bg-white z-40">
-          <div 
-            ref={resourceScrollRef}
-            className="h-full overflow-y-auto"
-            onScroll={syncResourceScroll}
-          >
-            {visibleRows.map((row, index) => (
-              <div
-                key={row.id}
-                className={`h-[60px] border-b border-gray-200 bg-white flex items-center px-2 ${
-                  row.type === 'parent'
-                    ? 'font-semibold bg-gray-50'
-                    : 'pl-8 text-gray-700'
-                }`}
-              >
-                {row.type === 'parent' && (
-                  <button
-                    onClick={() => handleToggleExpand(row.id)}
-                    className="mr-2 p-1 hover:bg-gray-200 rounded"
-                  >
-                    ▶
-                  </button>
-                )}
-                <span className="truncate">{row.name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Scrollable Timeline */}
+        {/* Single Virtualized Container */}
         <div className="flex-1 relative">
           <div
             ref={timelineScrollRef}
             className="absolute inset-0 overflow-x-auto hide-scrollbar"
             onScroll={e => syncScroll(e.target, headerScrollRef.current)}
           >
-            <div style={{ width: dates.length * cellWidth }}>
+            <div style={{ width: 192 + dates.length * cellWidth }}>
               <FixedSizeList
                 ref={timelineListRef}
                 height={containerHeight}
                 itemCount={visibleRows.length}
                 itemSize={rowHeight}
-                width={dates.length * cellWidth}
-                style={{ overflowY: 'hidden' }}
+                width={192 + dates.length * cellWidth}
               >
                 {({ index, style }) => {
                   const row = visibleRows[index]
                   return (
-                    <div style={style}>
-                      <ResourceRow
-                        resource={row}
-                        dates={dates}
-                        bookings={bookings}
-                        selection={selection}
-                        dragState={dragState}
-                        onCellMouseDown={handleCellMouseDown}
-                        onCellMouseEnter={handleCellMouseEnter}
-                        onBookingClick={handleBookingClick}
-                        onBookingDragStart={handleBookingDragStart}
-                        cellWidth={cellWidth}
-                      />
+                    <div style={style} className="flex">
+                      {/* Resource Column */}
+                      <div className="w-48 min-w-48 border-r border-gray-200 bg-white z-40">
+                        <div
+                          className={`h-full border-b border-gray-200 bg-white flex items-center px-2 ${
+                            row.type === 'parent'
+                              ? 'font-semibold bg-gray-50'
+                              : 'pl-8 text-gray-700'
+                          }`}
+                        >
+                          {row.type === 'parent' && (
+                            <button
+                              onClick={() => handleToggleExpand(row.id)}
+                              className="mr-2 p-1 hover:bg-gray-200 rounded"
+                            >
+                              ▶
+                            </button>
+                          )}
+                          <span className="truncate">{row.name}</span>
+                        </div>
+                      </div>
+                      
+                      {/* Timeline Row */}
+                      <div className="flex-1">
+                        <ResourceRow
+                          resource={row}
+                          dates={dates}
+                          bookings={bookings}
+                          selection={selection}
+                          dragState={dragState}
+                          onCellMouseDown={handleCellMouseDown}
+                          onCellMouseEnter={handleCellMouseEnter}
+                          onBookingClick={handleBookingClick}
+                          onBookingDragStart={handleBookingDragStart}
+                          cellWidth={cellWidth}
+                        />
+                      </div>
                     </div>
                   )
                 }}
