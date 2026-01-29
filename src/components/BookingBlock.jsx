@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import dayjs from 'dayjs'
 import { getDateIndex, daysBetween } from '../utils/dateUtils'
 
@@ -22,7 +22,6 @@ const BookingBlock = ({
   isDragging = false,
   dragOffset = { x: 0, y: 0 }
 }) => {
-  const [showTooltip, setShowTooltip] = useState(false)
   // Subtract 1 day from endDate since checkout date should not be included
   const displayEndDate = dayjs(booking.endDate).subtract(1, 'day').format('YYYY-MM-DD')
   
@@ -89,64 +88,26 @@ const BookingBlock = ({
   const borderColor = booking.backColor || '#40c970'
   
   return (
-    <div className="relative">
-      <div
-        className={`absolute top-1 bottom-1 border rounded text-white text-xs flex items-center justify-start font-medium shadow-md z-20 cursor-pointer transition-all ${
-          isDragging 
-            ? 'opacity-75 shadow-lg transform scale-105' 
-            : 'hover:shadow-lg'
-        }`}
-        style={{
-          left: `${left + dragOffset.x}px`,
-          top: `${1 + dragOffset.y}px`,
-          width: `${width}px`,
-          height: '50px',
-          backgroundColor: isDragging ? `${backgroundColor}99` : backgroundColor,
-          borderColor: borderColor,
-          transform: isDragging ? 'rotate(2deg)' : 'none',
-          pointerEvents: isDragging ? 'none' : 'auto'
-        }}
-        onMouseDown={handleMouseDown}
-        onMouseEnter={() => setShowTooltip(true)}
-        onMouseLeave={() => setShowTooltip(false)}
-      >
-        <span className="truncate px-2">{booking?.text || `Booking ${booking.id}`}</span>
-      </div>
-      
-      {/* Tooltip Card */}
-      {showTooltip && !isDragging && (
-        <div 
-          className="absolute bg-white border border-gray-300 rounded-lg shadow-lg p-3 z-50 min-w-64"
-          style={{
-            left: `${left + dragOffset.x}px`,
-            top: `${-10 + dragOffset.y}px`,
-            transform: 'translateY(-100%)'
-          }}
-        >
-          <div className="text-sm text-gray-800 space-y-1">
-            <div className="font-semibold text-gray-900">
-              {booking?.text || `Booking ${booking.id}`}
-            </div>
-            <div className="text-gray-600">
-              <strong>Apartment:</strong> {booking?.booking_details?.apartment || 'N/A'}
-            </div>
-            <div className="text-gray-600">
-              <strong>Check-in:</strong> {dayjs(booking.startDate).format('MMM DD, YYYY')}
-            </div>
-            <div className="text-gray-600">
-              <strong>Check-out:</strong> {dayjs(booking.endDate).format('MMM DD, YYYY')}
-            </div>
-            <div className="text-gray-600">
-              <strong>Duration:</strong> {daysBetween(booking.startDate, booking.endDate)} nights
-            </div>
-            {booking?.booking_details?.phone && (
-              <div className="text-gray-600">
-                <strong>Phone:</strong> {booking.booking_details.phone}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+    <div
+      className={`absolute top-1 bottom-1 border rounded text-white text-xs flex items-center justify-start font-medium shadow-md z-20 cursor-pointer transition-all ${
+        isDragging 
+          ? 'opacity-75 shadow-lg transform scale-105' 
+          : 'hover:shadow-lg'
+      }`}
+      style={{
+        left: `${left + dragOffset.x}px`,
+        top: `${1 + dragOffset.y}px`,
+        width: `${width}px`,
+        height: '50px',
+        backgroundColor: isDragging ? `${backgroundColor}99` : backgroundColor,
+        borderColor: borderColor,
+        transform: isDragging ? 'rotate(2deg)' : 'none',
+        pointerEvents: isDragging ? 'none' : 'auto'
+      }}
+      title={`${booking.text || `Booking ${booking.id}`}: ${booking.startDate} to ${booking.endDate} (checkout)`}
+      onMouseDown={handleMouseDown}
+    >
+      <span className="truncate px-2">{booking?.text || `Booking ${booking.id}`}</span>
     </div>
   )
 }

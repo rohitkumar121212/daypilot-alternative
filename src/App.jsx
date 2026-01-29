@@ -148,7 +148,6 @@ const App = () => {
           Click and drag to select date ranges for booking
         </p>
       </header>
-      {console.log("validBookings--- ", validBookings.filter(b=>b.backColor=='#5BCAC8'))}
       <div className="flex-1 overflow-hidden">
         {!resourcesLoaded ? (
           <div className="h-full flex items-center justify-center text-gray-500">

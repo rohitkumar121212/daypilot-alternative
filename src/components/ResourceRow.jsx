@@ -19,21 +19,7 @@ const ResourceRow = memo(({
   cellWidth = 100
 }) => {
   // Filter bookings for this resource
-  // console.log('ResourceRow received bookings: ', resource.id, ': ',bookings.filter(b=>b.backColor=='#5BCAC8').filter(b=>b.bookig_details.apartment_id==resource.id))
-  console.log(
-  'ResourceRow received bookings:',
-  resource.id,
-  bookings
-    .filter(b => b.backColor === '#5BCAC8')
-    .filter(
-      b => String(b.booking_details.apartment_id) === String(resource.id)
-    )
-);
-
-  // const resourceBookings = bookings.filter(b => b.resourceId === resource.id)
-  const resourceBookings = bookings.filter(b=>String(b.booking_details.apartment_id)===String(resource.id))
-  // console.log('ResourceRow bookings for resource ', resource.id, ': ', resourceBookings) 
-  // console.log('All bookings: ', bookings) 
+  const resourceBookings = bookings.filter(b => String(b.resourceId) === String(resource.id)) 
   
   // Check if this row has an active selection
   const hasSelection = selection && selection.resourceId === resource.id
