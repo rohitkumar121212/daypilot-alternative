@@ -409,7 +409,6 @@ const VirtualizedScheduler = ({
           setSelectedBookingId('')
         }}
       />
-
       {/* ================= HEADER ================= */}
       <div className="flex border-b bg-gray-50 sticky top-0 z-30">
         <div className="w-72 min-w-72 border-r flex items-center justify-center font-semibold sticky left-0 z-50 bg-gray-50">
@@ -470,7 +469,6 @@ const VirtualizedScheduler = ({
                           <span className="truncate text-sm">{row.name}</span>
                         </div>
                       </div>
-                      
                       {/* Timeline Row */}
                       <div className="flex-1">
                         <ResourceRow

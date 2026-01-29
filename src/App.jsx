@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import VirtualizedScheduler from './components/VirtualizedScheduler'
 import dayjs from 'dayjs'
-
 const App = () => {
   const [resources, setResources] = useState([])
   const [bookings, setBookings] = useState([])
@@ -29,11 +28,11 @@ const App = () => {
     async function loadData() {
       try {
         const resourcesRequest = fetch(
-          'https://aperfectstay.ai/api/aps-pms/apts/?user=5324240731504640&start=2026-01-20'
+          'https://aperfectstay.ai/api/aps-pms/apts/?user=6552614495846400&start=2026-01-20'
         )
 
         const bookingsRequest = fetch(
-          'https://aperfectstay.ai/api/aps-pms/reservations/?user=5324240731504640&start=2026-01-20&end=2026-02-20'
+          'https://aperfectstay.ai/api/aps-pms/reservations/?user=6552614495846400&start=2026-01-20&end=2026-02-20'
         )
 
         // 🚀 parallel execution
@@ -56,9 +55,7 @@ const App = () => {
             notes: 'Sample booking for Room-1',
             resourceId: parent?.booking_details?.apartment_id
           })) || []
-          console.log("Normalized resources:", resourcesJson?.data?.apt_build_details)
-          console.log("bookingData:", normalizedBookingData.filter(b => b.backColor =='#02d1d4').map((b) => ({...b, backColor: 'red'})))
-        // setResources(normalizedResources)
+          
         setResources(resourcesJson?.data?.apt_build_details || [])
         setResourcesLoaded(true)
 
@@ -85,11 +82,57 @@ const App = () => {
     const resourceIds = new Set()
     resources.forEach(parent => {
       parent.children?.forEach(child => {
-        resourceIds.add(child.id)
+        resourceIds.add(String(child.id))
       })
     })
+    
+    // Just log a few key examples
+    const splitBookings = bookings.filter(b => b.is_split === 'true')
+    const nonSplitBookings = bookings.filter(b => b.is_split === 'false')
+    
+    console.log('Split bookings:', splitBookings.length, 'Non-split:', nonSplitBookings.length)
+    
+    // Log first split booking example
+    if (splitBookings.length > 0) {
+      const example = splitBookings[0]
+      // console.log('Split booking example:', {
+      //   resourceId: example.resourceId,
+      //   type: typeof example.resourceId,
+      //   hasMatch: resourceIds.has(String(example.resourceId))
+      // })
+    }
+    
+    // Log first non-split booking example
+    if (nonSplitBookings.length > 0) {
+      const example = nonSplitBookings[0]
+      // console.log('Non-split booking example:', {
+      //   resourceId: example.resourceId,
+      //   type: typeof example.resourceId,
+      //   hasMatch: resourceIds.has(String(example.resourceId))
+      // })
+    }
+    
+    // Log first few resource IDs
+    // console.log('First 5 resource IDs:', Array.from(resourceIds).slice(0, 5))
+    
+    const validBookings = bookings.filter(b => resourceIds.has(String(b.resourceId)))
+    
+    // Debug the final valid bookings
+    const validSplit = validBookings.filter(b => b.is_split === 'true')
+    const validNonSplit = validBookings.filter(b => b.is_split === 'false')
+    // console.log('Valid split bookings:', validSplit.length, 'Valid non-split:', validNonSplit.length)
+    
+    // Check if split bookings have valid dates
+    if (validSplit.length > 0) {
+      const example = validSplit[2]
+      console.log('Valid split booking dates:', {
+        startDate: example.startDate,
+        endDate: example.endDate,
+        resourceId: example.resourceId
+      })
+    }
 
-    return bookings.filter(b => resourceIds.has(b.resourceId))
+    return validBookings
   }, [bookings, resources, resourcesLoaded])
 
   /* =========================
@@ -105,7 +148,7 @@ const App = () => {
           Click and drag to select date ranges for booking
         </p>
       </header>
-
+      {console.log("validBookings--- ", validBookings.filter(b=>b.backColor=='#5BCAC8'))}
       <div className="flex-1 overflow-hidden">
         {!resourcesLoaded ? (
           <div className="h-full flex items-center justify-center text-gray-500">
@@ -117,7 +160,7 @@ const App = () => {
             bookings={validBookings}
             onBookingCreate={handleBookingCreate}
             onResourcesChange={setResources}
-            daysToShow={45}
+            daysToShow={40}
             cellWidth={100}
             rowHeight={60}
           />
