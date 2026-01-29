@@ -57,7 +57,7 @@ const App = () => {
             resourceId: parent?.booking_details?.apartment_id
           })) || []
           console.log("Normalized resources:", resourcesJson?.data?.apt_build_details)
-          console.log("bookingData:", normalizedBookingData)
+          console.log("bookingData:", normalizedBookingData.filter(b => b.backColor =='#02d1d4').map((b) => ({...b, backColor: 'red'})))
         // setResources(normalizedResources)
         setResources(resourcesJson?.data?.apt_build_details || [])
         setResourcesLoaded(true)
@@ -117,7 +117,7 @@ const App = () => {
             bookings={validBookings}
             onBookingCreate={handleBookingCreate}
             onResourcesChange={setResources}
-            daysToShow={15}
+            daysToShow={45}
             cellWidth={100}
             rowHeight={60}
           />

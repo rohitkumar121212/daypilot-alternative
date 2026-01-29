@@ -57,6 +57,7 @@ const VirtualizedScheduler = ({
      Flatten resources with booking ID filter
   ========================= */
   const visibleRows = useMemo(() => {
+    
     let filteredResources = resources
     
     // Filter by booking ID if selected
@@ -83,19 +84,34 @@ const VirtualizedScheduler = ({
           child.name.toLowerCase().includes(searchTerm.toLowerCase())
         )
         return parentMatches || childMatches
+      }).map(parent => {
+        const parentMatches = parent.name.toLowerCase().includes(searchTerm.toLowerCase())
+        // If parent matches search, force expand it
+        return {
+          ...parent,
+          expanded: parentMatches ? true : parent.expanded
+        }
       })
     }
 
-    return filteredResources.flatMap(parent => {
+    const result = filteredResources.flatMap(parent => {
       const parentRow = {
         ...parent,
         type: 'parent'
       }
 
-      if (!parent.expanded) return [parentRow]
+      if (!parent.expanded) {
+        return [parentRow]
+      }
 
       const children = (parent.children || [])
-        .filter(child => !searchTerm || child.name.toLowerCase().includes(searchTerm.toLowerCase()))
+        .filter(child => {
+          // If parent matches search, show ALL children
+          // If parent doesn't match, only show children that match search
+          const parentMatches = parent.name.toLowerCase().includes(searchTerm.toLowerCase())
+          if (parentMatches) return true
+          return !searchTerm || child.name.toLowerCase().includes(searchTerm.toLowerCase())
+        })
         .map(child => ({
           ...child,
           parentId: parent.id,
@@ -104,6 +120,8 @@ const VirtualizedScheduler = ({
 
       return [parentRow, ...children]
     })
+    
+    return result
   }, [resources, searchTerm, selectedBookingId, bookings])
 
   /* =========================
@@ -317,11 +335,16 @@ const VirtualizedScheduler = ({
   ========================= */
   const handleToggleExpand = useCallback(
     (parentId) => {
-      onResourcesChange?.(
-        resources.map(r =>
-          r.id === parentId ? { ...r, expanded: !r.expanded } : r
-        )
-      )
+      
+      // Update the original resources state, not the filtered ones
+      const updatedResources = resources.map(r => {
+        if (r.id === parentId) {
+          return { ...r, expanded: !r.expanded }
+        }
+        return r
+      })
+      
+      onResourcesChange?.(updatedResources)
     },
     [resources, onResourcesChange]
   )
