@@ -74,68 +74,6 @@ const App = () => {
   }, [])
 
   /* =========================
-     Filter bookings AFTER resources
-  ========================= */
-  const validBookings = useMemo(() => {
-    if (!resourcesLoaded) return []
-
-    const resourceIds = new Set()
-    resources.forEach(parent => {
-      parent.children?.forEach(child => {
-        resourceIds.add(String(child.id))
-      })
-    })
-    
-    // Just log a few key examples
-    const splitBookings = bookings.filter(b => b.is_split === 'true')
-    const nonSplitBookings = bookings.filter(b => b.is_split === 'false')
-    
-    console.log('Split bookings:', splitBookings.length, 'Non-split:', nonSplitBookings.length)
-    
-    // Log first split booking example
-    if (splitBookings.length > 0) {
-      const example = splitBookings[0]
-      // console.log('Split booking example:', {
-      //   resourceId: example.resourceId,
-      //   type: typeof example.resourceId,
-      //   hasMatch: resourceIds.has(String(example.resourceId))
-      // })
-    }
-    
-    // Log first non-split booking example
-    if (nonSplitBookings.length > 0) {
-      const example = nonSplitBookings[0]
-      // console.log('Non-split booking example:', {
-      //   resourceId: example.resourceId,
-      //   type: typeof example.resourceId,
-      //   hasMatch: resourceIds.has(String(example.resourceId))
-      // })
-    }
-    
-    // Log first few resource IDs
-    // console.log('First 5 resource IDs:', Array.from(resourceIds).slice(0, 5))
-    
-    const validBookings = bookings.filter(b => resourceIds.has(String(b.resourceId)))
-    
-    // Debug the final valid bookings
-    const validSplit = validBookings.filter(b => b.is_split === 'true')
-    const validNonSplit = validBookings.filter(b => b.is_split === 'false')
-    // console.log('Valid split bookings:', validSplit.length, 'Valid non-split:', validNonSplit.length)
-    
-    // Check if split bookings have valid dates
-    if (validSplit.length > 0) {
-      const example = validSplit[2]
-      console.log('Valid split booking dates:', {
-        startDate: example.startDate,
-        endDate: example.endDate,
-        resourceId: example.resourceId
-      })
-    }
-
-    return validBookings
-  }, [bookings, resources, resourcesLoaded])
-
-  /* =========================
      Render
   ========================= */
   return (
@@ -156,7 +94,7 @@ const App = () => {
         ) : (
           <VirtualizedScheduler
             resources={resources}
-            bookings={validBookings}
+            bookings={bookings}
             onBookingCreate={handleBookingCreate}
             onResourcesChange={setResources}
             daysToShow={20}
