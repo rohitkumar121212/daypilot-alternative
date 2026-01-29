@@ -1,4 +1,5 @@
 import React from 'react'
+import dayjs from 'dayjs'
 import { getDateIndex, daysBetween } from '../utils/dateUtils'
 
 /**
@@ -21,13 +22,16 @@ const BookingBlock = ({
   isDragging = false,
   dragOffset = { x: 0, y: 0 }
 }) => {
+  // Subtract 1 day from endDate since checkout date should not be included
+  const displayEndDate = dayjs(booking.endDate).subtract(1, 'day').format('YYYY-MM-DD')
+  
   const startIndex = getDateIndex(booking.startDate, dates)
-  const endIndex = getDateIndex(booking.endDate, dates)
+  const endIndex = getDateIndex(displayEndDate, dates)
   
   // Only hide if booking doesn't overlap with visible range at all
   // Show booking if: starts in range OR ends in range OR spans entire range
   const bookingStartsBeforeRange = startIndex === -1 && booking.startDate < dates[0]
-  const bookingEndsAfterRange = endIndex === -1 && booking.endDate > dates[dates.length - 1]
+  const bookingEndsAfterRange = endIndex === -1 && displayEndDate > dates[dates.length - 1]
   const bookingSpansEntireRange = bookingStartsBeforeRange && bookingEndsAfterRange
   const bookingOverlapsRange = startIndex !== -1 || endIndex !== -1 || bookingSpansEntireRange
   
@@ -100,7 +104,7 @@ const BookingBlock = ({
         transform: isDragging ? 'rotate(2deg)' : 'none',
         pointerEvents: isDragging ? 'none' : 'auto'
       }}
-      title={`${booking.text || `Booking ${booking.id}`}: ${booking.startDate} to ${booking.endDate}`}
+      title={`${booking.text || `Booking ${booking.id}`}: ${booking.startDate} to ${booking.endDate} (checkout)`}
       onMouseDown={handleMouseDown}
     >
       <span className="truncate px-2">{booking?.text || `Booking ${booking.id}`}</span>
