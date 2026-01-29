@@ -159,7 +159,7 @@ const App = () => {
             bookings={validBookings}
             onBookingCreate={handleBookingCreate}
             onResourcesChange={setResources}
-            daysToShow={40}
+            daysToShow={20}
             cellWidth={100}
             rowHeight={60}
           />
