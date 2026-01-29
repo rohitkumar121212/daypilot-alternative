@@ -24,12 +24,18 @@ const BookingBlock = ({
   const startIndex = getDateIndex(booking.startDate, dates)
   const endIndex = getDateIndex(booking.endDate, dates)
   
-  // If booking dates are outside the visible range, don't render
-  if (startIndex === -1 && endIndex === -1) return null
+  // Only hide if booking doesn't overlap with visible range at all
+  // Show booking if: starts in range OR ends in range OR spans entire range
+  const bookingStartsBeforeRange = startIndex === -1 && booking.startDate < dates[0]
+  const bookingEndsAfterRange = endIndex === -1 && booking.endDate > dates[dates.length - 1]
+  const bookingSpansEntireRange = bookingStartsBeforeRange && bookingEndsAfterRange
+  const bookingOverlapsRange = startIndex !== -1 || endIndex !== -1 || bookingSpansEntireRange
   
-  // Calculate position and width
-  const visibleStartIndex = Math.max(0, startIndex)
-  const visibleEndIndex = Math.min(dates.length - 1, endIndex)
+  if (!bookingOverlapsRange) return null
+  
+  // Calculate position and width for visible portion
+  const visibleStartIndex = Math.max(0, startIndex === -1 ? 0 : startIndex)
+  const visibleEndIndex = Math.min(dates.length - 1, endIndex === -1 ? dates.length - 1 : endIndex)
   
   const left = visibleStartIndex * cellWidth
   const span = visibleEndIndex - visibleStartIndex + 1

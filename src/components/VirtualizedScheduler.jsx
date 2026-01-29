@@ -389,7 +389,7 @@ const VirtualizedScheduler = ({
 
       {/* ================= HEADER ================= */}
       <div className="flex border-b bg-gray-50 sticky top-0 z-30">
-        <div className="w-48 min-w-48 border-r flex items-center justify-center font-semibold sticky left-0 z-50 bg-gray-50">
+        <div className="w-72 min-w-72 border-r flex items-center justify-center font-semibold sticky left-0 z-50 bg-gray-50">
           Resources
         </div>
 
@@ -428,7 +428,7 @@ const VirtualizedScheduler = ({
                   return (
                     <div style={style} className="flex">
                       {/* Resource Column */}
-                      <div className="w-48 min-w-48 border-r border-gray-200 bg-white z-40">
+                      <div className="w-72 min-w-72 border-r border-gray-200 bg-white z-40">
                         <div
                           className={`h-full border-b border-gray-200 bg-white flex items-center px-2 ${
                             row.type === 'parent'
@@ -444,7 +444,7 @@ const VirtualizedScheduler = ({
                               ▶
                             </button>
                           )}
-                          <span className="truncate">{row.name}</span>
+                          <span className="truncate text-sm">{row.name}</span>
                         </div>
                       </div>
                       
