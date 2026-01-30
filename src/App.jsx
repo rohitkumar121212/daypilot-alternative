@@ -28,11 +28,11 @@ const App = () => {
     async function loadData() {
       try {
         const resourcesRequest = fetch(
-          'https://aperfectstay.ai/api/aps-pms/apts/?user=6552614495846400&start=2026-01-20'
+          'https://aperfectstay.ai/api/aps-pms/apts/?user=6351746143092736&start=2026-01-20'
         )
 
         const bookingsRequest = fetch(
-          'https://aperfectstay.ai/api/aps-pms/reservations/?user=6552614495846400&start=2026-01-20&end=2026-02-20'
+          'https://aperfectstay.ai/api/aps-pms/reservations/?user=6351746143092736&start=2026-01-20&end=2026-02-20'
         )
 
         // 🚀 parallel execution
