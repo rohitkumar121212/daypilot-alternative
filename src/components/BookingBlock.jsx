@@ -87,6 +87,22 @@ const BookingBlock = ({
   const backgroundColor = booking.backColor || '#40c970'
   const borderColor = booking.backColor || '#40c970'
   
+  // Parse bubbleHtml to check for Lead_Source and is_left
+  let bubbleData = {}
+  try {
+    if (booking.bubbleHtml) {
+      // Convert Python dict string to JSON format
+      const jsonStr = booking.bubbleHtml.replace(/'/g, '"')
+      bubbleData = JSON.parse(jsonStr)
+    }
+  } catch (e) {
+    // If parsing fails, bubbleData remains empty object
+  }
+  
+  // Determine if we should show Lead_Source icon and its position
+  const shouldShowIcon = booking.Lead_Source_icon === "true" && bubbleData.Lead_Source
+  const showOnLeft = bubbleData.is_left === "true" || bubbleData.is_left === true
+  
   return (
     <div
       className={`absolute top-1 bottom-1 border rounded text-white text-xs flex items-center justify-start font-medium shadow-md z-20 cursor-pointer transition-all ${
@@ -107,7 +123,13 @@ const BookingBlock = ({
       title={`${booking.text || `Booking ${booking.id}`}: ${booking.startDate} to ${booking.endDate} (checkout)`}
       onMouseDown={handleMouseDown}
     >
+      {shouldShowIcon && showOnLeft && (
+        <img src={bubbleData.Lead_Source} alt="Lead Source" className="w-4 h-4 mx-1" />
+      )}
       <span className="truncate px-2">{booking?.text || `Booking ${booking.id}`}</span>
+      {shouldShowIcon && !showOnLeft && (
+        <img src={bubbleData.Lead_Source} alt="Lead Source" className="w-4 h-4 mx-1" />
+      )}
     </div>
   )
 }
