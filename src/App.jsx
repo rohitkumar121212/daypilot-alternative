@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import VirtualizedScheduler from './components/VirtualizedScheduler'
+import SimpleVirtualScheduler from './components/SimpleVirtualScheduler'
 import dayjs from 'dayjs'
 const App = () => {
   const [resources, setResources] = useState([])
@@ -77,6 +78,26 @@ const App = () => {
      Render
   ========================= */
   return (
+  <>
+ <div className="flex-1 overflow-hidden flex flex-col">
+        <div className="flex-1 border-b-2 border-gray-300">
+         <div className="bg-blue-50 px-4 py-2 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-blue-800">SimpleVirtualScheduler (Custom Implementation)</h2>
+            <p className="text-sm text-blue-600">Manual virtualization without external dependencies</p>
+          </div>
+          <div className="h-[82vh]">
+             <SimpleVirtualScheduler
+               resources={resources}
+               bookings={bookings}
+               onBookingCreate={handleBookingCreate}
+               onResourcesChange={setResources}
+               daysToShow={30}
+               cellWidth={100}
+               rowHeight={60}
+             />
+           </div>
+         </div> 
+         </div>
     <div className="h-screen w-screen flex flex-col bg-gray-100">
       <header className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
         <h1 className="text-2xl font-bold text-gray-900">
@@ -104,6 +125,7 @@ const App = () => {
         )}
       </div>
     </div>
+    </>
   )
 }
 

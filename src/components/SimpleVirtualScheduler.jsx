@@ -63,7 +63,7 @@ const SimpleVirtualScheduler = ({
   }, [resources])
   
   // Virtual scrolling calculations
-  const containerHeight = 500 // Fixed height for virtual container
+  const containerHeight = 600 // Fixed height for virtual container
   const totalHeight = visibleRows.length * rowHeight
   const startIndex = Math.floor(scrollTop / rowHeight)
   const endIndex = Math.min(startIndex + Math.ceil(containerHeight / rowHeight) + 1, visibleRows.length)
@@ -284,7 +284,7 @@ const SimpleVirtualScheduler = ({
                     </button>
                   )}
                   {row.type === 'child' && <span className="w-6 flex-shrink-0" />}
-                  <span className="flex-1 truncate">{row.name}</span>
+                  <span className="flex-1 truncate text-sm">{row.name}</span>
                 </div>
               ))}
             </div>
