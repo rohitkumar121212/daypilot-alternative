@@ -219,7 +219,7 @@ const SimpleVirtualScheduler = ({
     <div className="w-full h-full flex flex-col bg-white select-none">
       {/* Header Row */}
       <div className="flex border-b border-gray-300 bg-gray-50 sticky top-0 z-30 shadow-sm">
-        <div className="w-48 min-w-48 border-r border-gray-200 bg-gray-50 sticky left-0 z-40 flex items-center justify-center font-semibold text-gray-700">
+        <div className="w-64 min-w-64 border-r border-gray-200 bg-gray-50 sticky left-0 z-40 flex items-center justify-center font-semibold text-gray-700">
           Resources
         </div>
         
@@ -243,7 +243,7 @@ const SimpleVirtualScheduler = ({
       {/* Virtual Body Container */}
       <div className="flex-1 flex">
         {/* Resource Column */}
-        <div className="w-48 min-w-48 border-r border-gray-200 bg-white sticky left-0 z-20">
+        <div className="w-64 min-w-64 border-r border-gray-200 bg-white sticky left-0 z-20">
           <div 
             className="overflow-y-auto resource-scroll"
             style={{ height: containerHeight }}
@@ -253,7 +253,7 @@ const SimpleVirtualScheduler = ({
               {visibleItems.map((row, index) => (
                 <div
                   key={row.id}
-                  className={`absolute w-full border-b border-gray-200 bg-white flex items-center font-medium hover:bg-gray-50 ${
+                  className={`absolute w-full border-b border-gray-200 bg-white flex items-center hover:bg-gray-50 ${
                     row.type === 'parent' 
                       ? 'font-semibold bg-gray-50' 
                       : 'pl-8 text-gray-700'
